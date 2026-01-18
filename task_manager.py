@@ -63,12 +63,14 @@ class TaskManager:
     def _only_digits(self, proposed: str) -> bool:
         return proposed.isdigit() or proposed == ''
 
-    def toggle_overlays(self, force_visible=False):
+    def toggle_overlays(self, force_visible=False, force_hide=False):
         if not hasattr(self, 'overlays_visible'):
             self.overlays_visible = True
         self.overlays_visible = not self.overlays_visible
         if force_visible:
             self.overlays_visible = True
+        if force_hide:
+            self.overlays_visible = False
         for window in mag.event_windows:
             if self.overlays_visible:
                 window.deiconify()
@@ -110,6 +112,7 @@ class TaskManager:
                     "next_event_delay": ev.event_data["next_event_delay"].get(),
                     "type_text": ev.event_data["type_text"].get(),
                     "entered_text": ev.event_data["entered_text"].get(),
+                    "input_random_int": ev.event_data["input_random_int"].get(),
                     "press_enter": ev.event_data["press_enter"].get(),
                     "press_backspace": ev.event_data["press_backspace"].get(),
                     "random_position": ev.event_data["random_position"].get(),
@@ -258,6 +261,8 @@ class TaskManager:
         type_text_checkbox.pack(side="left", padx=5)
         text_entry = tk.Entry(text_actions_frame,textvariable=event_button.event_data["entered_text"],width=10)
         text_entry.pack(side="left", padx=5)
+        input_random_int_checkbox = tk.Checkbutton(text_actions_frame, text="Random Int", variable=event_button.event_data["input_random_int"],command=lambda eb=event_button: eb.update_event('input_random_int', eb.event_data["input_random_int"].get()))
+        input_random_int_checkbox.pack(side="left", padx=5)
         press_enter_checkbox = tk.Checkbutton(text_actions_frame,text="Press Enter",variable=event_button.event_data["press_enter"],command=lambda eb=event_button: eb.update_event('press_enter', eb.event_data["press_enter"].get()))
         press_enter_checkbox.pack(side="left", padx=5)
         press_backspace_checkbox = tk.Checkbutton(text_actions_frame,text="Press Backspace",variable=event_button.event_data["press_backspace"],command=lambda eb=event_button: eb.update_event('press_backspace', eb.event_data["press_backspace"].get()))
@@ -333,6 +338,7 @@ class TaskManager:
                     "next_event_delay": ev.event_data["next_event_delay"].get(),
                     "type_text": ev.event_data["type_text"].get(),
                     "entered_text": ev.event_data["entered_text"].get(),
+                    "input_random_int": ev.event_data["input_random_int"].get(),
                     "press_enter": ev.event_data["press_enter"].get(),
                     "press_backspace": ev.event_data["press_backspace"].get(),
                     "random_position": ev.event_data["random_position"].get(),
@@ -377,6 +383,7 @@ class TaskManager:
                     "next_event_delay": event_item["next_event_delay"],
                     "type_text": event_item["type_text"],
                     "entered_text": event_item["entered_text"],
+                    "input_random_int": event_item["input_random_int"],
                     "press_enter": event_item["press_enter"],
                     "press_backspace": event_item["press_backspace"],
                     "random_position": event_item["random_position"],
@@ -411,6 +418,7 @@ class TaskManager:
     def start_task(self):
         if not mag.task_running:
             mag.task_running = True
+            self.toggle_overlays(force_hide=True)
             self.start_button.config(state="disabled")
             self.stop_button.config(state="normal")
             self.status_label.config(text="Status: Running")
@@ -421,6 +429,7 @@ class TaskManager:
 
     def stop_task(self):
         if mag.task_running:
+            self.toggle_overlays(force_visible=True)
             mag.task_running = False
             self.start_button.config(state="normal")
             self.stop_button.config(state="disabled")

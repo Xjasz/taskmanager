@@ -109,11 +109,14 @@ def get_text_from_view(root, save_screenshot=False):
         proc.save(f"dbg_{ts}.png")
         logger.debug(f"Saved debug image: dbg_{ts}.png at X:{x} Y:{y} W:{w} H:{h}")
     raw = pytesseract.image_to_string(proc)
-    text = raw
-    logger.debug(f"OCR raw='{raw}'")
+    if raw is not None:
+        raw = raw.replace("\n", " ").replace("\r", "")
+        text = re.sub(r"[^A-Za-z0-9. ]", '', raw).strip()
+        logger.debug(f"OCR RAW='{raw}'")
+        logger.debug(f"OCR TXT='{text}'")
     if not raw:
         raw = pytesseract.image_to_string(proc, config="--oem 3 --psm 6")
-        text = re.sub(r"[^A-Za-z0-9.]", '', raw).strip()
+        text = re.sub(r"[^A-Za-z0-9. ]", '', raw).strip()
         logger.debug(f"OCR pass2 raw='{raw}' -> cleaned='{text}'")
     return text
 

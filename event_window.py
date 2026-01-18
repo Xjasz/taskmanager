@@ -172,6 +172,7 @@ class EventButton(EventWindow):
             "next_event_delay": tk.IntVar(value=int(default.get("next_event_delay", 0))),
             "type_text": tk.BooleanVar(value=bool(default.get("type_text", False))),
             "entered_text": tk.StringVar(value=str(default.get("entered_text", ""))),
+            "input_random_int": tk.BooleanVar(value=bool(default.get("input_random_int", False))),
             "press_enter": tk.BooleanVar(value=bool(default.get("press_enter", False))),
             "press_backspace": tk.BooleanVar(value=bool(default.get("press_backspace", False))),
             "random_position": tk.BooleanVar(value=bool(default.get("random_position", True))),
@@ -198,8 +199,15 @@ class EventButton(EventWindow):
                 pyautogui.press('enter'); time.sleep(0.01)
             if self.event_data["press_backspace"].get():
                 pyautogui.press('backspace'); time.sleep(0.01)
-            if len(entered_text) > 0:
-                pyautogui.write(entered_text, interval=0.02)
+            if self.event_data["input_random_int"].get():
+                random_number = random.randint(1, 9)
+                random_input = f"{random_number:01d}"
+                logger.debug(f"random_input ='{random_input}'")
+                pyautogui.write(random_input, interval=0.02)
+            if entered_text:
+                if len(entered_text) > 0:
+                    logger.debug(f"entered_text ='{entered_text}'")
+                    pyautogui.write(entered_text, interval=0.02)
             if self.event_data["move_mouse_back"].get():
                 pyautogui.moveTo(orig_x, orig_y)
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

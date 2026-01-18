@@ -6,6 +6,7 @@ found.txt
 processed.txt
 *.pyc
 __pycache__/
+data/*
 
 projects/btc/data/dupes.txt
 
