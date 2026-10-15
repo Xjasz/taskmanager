@@ -1,4 +1,4 @@
-import os
+import sys
 import tkinter as tk
 from tkinter import simpledialog, messagebox, ttk
 from typing import Optional
@@ -78,6 +78,8 @@ class TaskManager:
                 window.withdraw()
 
     def new_task(self):
+        if mag.task_running:
+            return
         task_name = simpledialog.askstring("New Task", "Enter the name of the new task:", parent=self.root)
         if task_name:
             if task_name in self.tasks and not messagebox.askyesno("Task Exists", f"'{task_name}' already exists. Replace it?"):
@@ -136,6 +138,9 @@ class TaskManager:
         return ["None"] + names if names else ["None"]
 
     def create_new_event(self, event_type):
+        if not self.task_name:
+            messagebox.showwarning("No Task Selected", "Please create or load a task before adding events.")
+            return
         event_name = simpledialog.askstring("New Item", "Enter the name of the new item:", parent=self.root)
         if event_name:
             if event_type == EVENT_BUTTON:
@@ -306,6 +311,11 @@ class TaskManager:
             event_object.event_container.destroy()
         if hasattr(event_object, "event_name"):
             self.tasks[self.task_name] = [ev for ev in self.tasks[self.task_name]if ev.get("event_name") != event_object.event_name]
+        for ev in mag.event_windows:
+            for key in ("next_event", "next_event_success", "next_event_fail"):
+                if key in ev.event_data and ev.event_data[key].get() == event_object.event_name:
+                    ev.event_data[key].set("None")
+        self.update_task_events()
 
     def update_task_events(self):
         names = self.update_task_ui()
@@ -364,6 +374,8 @@ class TaskManager:
         logger.debug(f"Task '{self.task_name}' saved.")
 
     def load_task(self):
+        if mag.task_running:
+            return
         task_list = list(self.tasks.keys())
         if not task_list:
             messagebox.showerror("Error", "No tasks available to load.")
@@ -377,34 +389,10 @@ class TaskManager:
         self.label.config(text=f"Loaded: {self.task_name}")
         for event_item in self.get_task_events():
             geom = {"geometry": event_item.get("geometry", "200x200")}
-            base_data = {"run_at_start": event_item["run_at_start"],"repeat": event_item["repeat"],"repeat_delay": event_item["repeat_delay"],}
             if event_item["event_type"] == EVENT_BUTTON:
-                btn_data = {
-                    **base_data,
-                    "next_event": event_item["next_event"],
-                    "next_event_delay": event_item["next_event_delay"],
-                    "type_text": event_item["type_text"],
-                    "entered_text": event_item["entered_text"],
-                    "input_random_int": event_item["input_random_int"],
-                    "press_enter": event_item["press_enter"],
-                    "press_backspace": event_item["press_backspace"],
-                    "random_position": event_item["random_position"],
-                    "move_mouse_back": event_item["move_mouse_back"],
-                    "double_click": event_item["double_click"],
-                }
-                self.place_event_button(event_name=event_item["event_name"],event_data=btn_data,event_params=geom)
+                self.place_event_button(event_name=event_item["event_name"],event_data=event_item,event_params=geom)
             elif event_item["event_type"] == EVENT_LOGIC:
-                logic_data = {
-                    **base_data,
-                    "next_event_success": event_item["next_event_success"],
-                    "next_event_success_delay": event_item["next_event_success_delay"],
-                    "logic_type": event_item["logic_type"],
-                    "next_event_fail": event_item["next_event_fail"],
-                    "next_event_fail_delay": event_item["next_event_fail_delay"],
-                    "logic_action": event_item["logic_action"],
-                    "logic_value": event_item["logic_value"],
-                }
-                self.place_event_logic(event_name=event_item["event_name"],event_data=logic_data,event_params=geom)
+                self.place_event_logic(event_name=event_item["event_name"],event_data=event_item,event_params=geom)
             else:
                 logger.debug(f"Unknown event type: {event_item['event_type']}")
         logger.debug(f"Task '{self.task_name}' loaded.")
@@ -444,6 +432,8 @@ class TaskManager:
         return ask_selection(self.root, options, title, prompt)
 
 if __name__ == "__main__":
+    if sys.platform != "win32":
+        raise SystemExit("Task Manager runs on Windows only.")
     try:
         root = tk.Tk()
         task_manager = TaskManager(root)
