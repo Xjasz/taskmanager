@@ -80,6 +80,8 @@ class TaskManager:
     def new_task(self):
         task_name = simpledialog.askstring("New Task", "Enter the name of the new task:", parent=self.root)
         if task_name:
+            if task_name in self.tasks and not messagebox.askyesno("Task Exists", f"'{task_name}' already exists. Replace it?"):
+                return
             self.tasks[task_name] = []
             mau.save_json_file(mag.taskmanager_file, self.tasks)
             self.task_name = task_name
@@ -443,8 +445,6 @@ class TaskManager:
 
 if __name__ == "__main__":
     try:
-        if not os.path.exists('data'):
-            os.makedirs('data')
         root = tk.Tk()
         task_manager = TaskManager(root)
         root.task_manager = task_manager

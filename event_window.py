@@ -206,7 +206,7 @@ class EventButton(EventWindow):
                 pyautogui.write(random_input, interval=0.02)
             if entered_text:
                 if len(entered_text) > 0:
-                    logger.debug(f"entered_text ='{entered_text}'")
+                    logger.debug("typing entered_text")
                     pyautogui.write(entered_text, interval=0.02)
             if self.event_data["move_mouse_back"].get():
                 pyautogui.moveTo(orig_x, orig_y)

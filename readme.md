@@ -14,3 +14,27 @@ Make sure you have the following Python libraries installed:
 
 ```bash
 pip install -r requirements.txt
+```
+
+Logic events that read screen text also need the Tesseract OCR program installed and on `PATH` (https://github.com/tesseract-ocr/tesseract).
+
+Windows only: the user-activity checks call `ctypes.windll`.
+
+## Run
+
+```bash
+python task_manager.py
+```
+
+## How a task works
+
+- A task is a named list of events saved to `data/tm.json` next to the scripts.
+- Each event is a see-through overlay box you place over a spot on the screen.
+- A button event clicks inside its box and can type text, a random digit, Enter or Backspace, then optionally moves the mouse back.
+- A logic event reads the text (OCR) or the colour inside its box and chains to a success or a fail event.
+- Every event can run at start, repeat after a delay, and name the event that runs next.
+
+## Limitations
+
+- Events run on the GUI thread, so the window is unresponsive while an event executes and Stop takes effect between events.
+- Moving the mouse into a screen corner triggers the pyautogui fail-safe and aborts the run.
