@@ -77,6 +77,9 @@ class EventWindow(tk.Toplevel):
             self.handle_next(result)
             if self.event_data["repeat"].get():
                 self.schedule_repeat_event()
+        except pyautogui.FailSafeException:
+            logger.error(f"Fail-safe triggered in {self.event_name}, stopping task")
+            self.root.task_manager.stop_task()
         except Exception as e:
             application_error_handler(f"Error executing {self.event_name}: {e}")
         for w in mag.event_windows:
@@ -188,8 +191,8 @@ class EventButton(EventWindow):
             base_x = self.winfo_x() + w // 4
             base_y = self.winfo_y() + h // 4
             rp = self.event_data["random_position"].get()
-            click_x = base_x + (random.randint(0, w//2) if rp else w//2)
-            click_y = base_y + (random.randint(0, h//2) if rp else h//2)
+            click_x = base_x + (random.randint(0, w//2) if rp else w//4)
+            click_y = base_y + (random.randint(0, h//2) if rp else h//4)
             pyautogui.moveTo(click_x, click_y, duration=0.05)
             pyautogui.click()
             time.sleep(0.1)
@@ -206,12 +209,14 @@ class EventButton(EventWindow):
                 pyautogui.write(random_input, interval=0.02)
             if entered_text:
                 if len(entered_text) > 0:
-                    logger.debug(f"entered_text ='{entered_text}'")
+                    logger.debug("typing entered_text")
                     pyautogui.write(entered_text, interval=0.02)
             if self.event_data["move_mouse_back"].get():
                 pyautogui.moveTo(orig_x, orig_y)
             timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
             logger.debug(f"Clicked '{self.event_name}' at ({click_x},{click_y}) @ {timestamp}")
+        except pyautogui.FailSafeException:
+            raise
         except Exception as e:
             application_error_handler(f"Error in EventButton.execute: {e}")
 

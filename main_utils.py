@@ -25,7 +25,7 @@ def is_user_active():
         time.sleep(0.01)
     if is_key_pressed():
         return True
-    if is_left_button_down() or is_right_button_down() or is_mouse_scrolled():
+    if is_left_button_down() or is_right_button_down():
         return True
     return False
 
@@ -40,11 +40,6 @@ def is_left_button_down():
 
 def is_right_button_down():
     return (ctypes.windll.user32.GetAsyncKeyState(0x02) & 0x8000) != 0
-
-def is_mouse_scrolled():
-    scroll_up = ctypes.windll.user32.GetAsyncKeyState(0x0800) & 0x8000
-    scroll_down = ctypes.windll.user32.GetAsyncKeyState(0x0400) & 0x8000
-    return scroll_up != 0 or scroll_down != 0
 
 def load_json_file(file_path):
     logger.debug(f"load_json_file{file_path}")

@@ -12,7 +12,9 @@ logger_level = 'DEBUG'
 formatter = logging.Formatter(fmt='"%(asctime)s","%(name)s","%(levelname)s","%(message)s"')
 formatter.converter = time.gmtime
 
-log_filepath = os.path.join(os.getcwd()+"/data/", logger_name + ".log")
+data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data")
+os.makedirs(data_dir, exist_ok=True)
+log_filepath = os.path.join(data_dir, logger_name + ".log")
 file_handler = logging.FileHandler(log_filepath, mode='a')
 file_handler.setLevel(level=logger_level)
 file_handler.setFormatter(formatter)
@@ -42,8 +44,7 @@ def application_error_handler(e):
         'file_name': caller_frame.f_code.co_filename,
         'function_name': caller_frame.f_code.co_name,
         'line_number': caller_frame.f_lineno,
-        'stack_trace': stack_trace,
-        'locals': {key: str(value) for key, value in caller_frame.f_locals.items()}
+        'stack_trace': stack_trace
     }
 
     logger.error("---------================== Detailed Error Report ==================---------")
@@ -55,9 +56,6 @@ def application_error_handler(e):
     logger.error(f"Line Number: {error_details['line_number']}")
     logger.error("Stack Trace:")
     logger.error(error_details['stack_trace'])
-    logger.error("Local Variables:")
-    for var_name, var_value in error_details['locals'].items():
-        logger.error(f"    {var_name} = {var_value}")
     logger.error("---------================== End Error Report ==================---------")
     del frame
     del caller_frame
